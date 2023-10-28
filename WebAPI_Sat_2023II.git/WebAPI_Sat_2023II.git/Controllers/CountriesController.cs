@@ -53,5 +53,47 @@ namespace WebAPI_Sat_2023II.git.Controllers
                 return Conflict(ex.Message);
             }
         }
+
+        [HttpGet, ActionName("Get")]
+        [Route("GetById/{id}")] //Aquí concateno la URL inicial. 
+        public async Task<ActionResult<Country>> GetCountryByIdAsync(Guid id)
+        {
+            if(id==null) return BadRequest("Id es requerido!");
+
+            var country = await _countryService.GetCountryByIdAsync(id); 
+
+            if (country == null) return NotFound();  //NotFound = 404 Http Status Code
+            
+            return Ok(country);   //Ok = 200 Http Status Code
+        }
+
+        [HttpPut, ActionName("Edit")]
+        [Route("Edit")]
+        public async Task<ActionResult> EditCountryAsync(Country country)
+        {
+            try
+            {
+                var editedCountry = await _countryService.EditCountryAsync(country);
+                return Ok(editedCountry);
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("duplicated"))
+                {
+                    return Conflict(String.Format("El país {0} ya existe.", country.Name));
+                }
+                return Conflict(ex.Message);
+            }
+        }
+
+        [HttpDelete, ActionName("Delete")]
+        [Route("Delete")]
+        public async Task<ActionResult> DeleteCountryAsync(Guid id)
+        {
+            if (id == null) return BadRequest("Id es requerido");
+            var deletedCountry = await _countryService.DeleteCountryAsync(id);
+            if (deletedCountry == null) return NotFound("País no encontrado");  
+            return Ok(deletedCountry);
+        }
     }
 }
